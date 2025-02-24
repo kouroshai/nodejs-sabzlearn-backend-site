@@ -47,3 +47,36 @@ exports.createSession = async (req, res) => {
 
   return res.status(201).json(session);
 };
+
+exports.getAllSessions = async (req, res) => {
+  const sessions = await sessionModel
+    .find({})
+    .populate("course", "name")
+    .lean();
+
+  return res.json(sessions);
+};
+
+exports.getSessionInfo = async (req, res) => {
+  const course = await courseModel.findOne({ href: req.params.href }).lean();
+
+  const session = await sessionModel.findOne({ _id: req.params.sessionID });
+
+  const sessions = await sessionModel.find({ course: course._id });
+
+  return res.json({ session, sessions });
+};
+
+exports.removeSession = async (req, res) => {
+  const deletedCourses = await sessionModel.findOneAndDelete({
+    _id: req.params.id,
+  });
+
+  if (!deletedCourses) {
+    return res.status(404).json({
+      message: "Course not found !!",
+    });
+  }
+
+  return res.json(deletedCourses);
+};

@@ -18,6 +18,8 @@ router
     coursesController.create
   );
 
+router.route("/:href/:sessionID").get(coursesController.getSessionInfo);
+
 router.route("/:id/sessions").post(
   // multer({ storage: multerStorage, limits: { fileSize: 1000000000 } }).single(
   //   "video"
@@ -26,5 +28,13 @@ router.route("/:id/sessions").post(
   isAdminMiddleware,
   coursesController.createSession
 );
+
+router
+  .route("/sessions")
+  .get(authMiddleware, isAdminMiddleware, coursesController.getAllSessions);
+
+router
+  .route("/sessions/:id")
+  .delete(authMiddleware, isAdminMiddleware, coursesController.removeSession);
 
 module.exports = router;
