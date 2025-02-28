@@ -18,6 +18,12 @@ router
     coursesController.create
   );
 
+router.route("/:href").get(coursesController.getOne);
+
+router.route("/category/:href").get(coursesController.getCoursesByCategory);
+
+router.route("/:id/register").post(authMiddleware, coursesController.register);
+
 router.route("/:href/:sessionID").get(coursesController.getSessionInfo);
 
 router.route("/:id/sessions").post(

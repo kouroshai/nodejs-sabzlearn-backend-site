@@ -1,5 +1,8 @@
 const courseModel = require("./../../models/course");
 const sessionModel = require("./../../models/session");
+const categoryModel = require("./../../models/category");
+const commentsModel = require("./../../models/comment");
+const courseUserModel = require("./../../models/course-user");
 
 exports.create = async (req, res) => {
   const {
@@ -31,6 +34,27 @@ exports.create = async (req, res) => {
     .populate("creator", "-password");
 
   return res.status(201).json(mainCourse);
+};
+
+exports.getOne = async (req, res) => {
+  const course = await courseModel
+    .findOne({ href: req.params.href })
+    .populate("creator", "-password")
+    .populate("categoryID");
+
+  const sessions = await sessionModel.find({ course: course._id }).lean();
+  const comments = await commentsModel
+    .find({ course: course._id, isAccept: 1 })
+    .populate("creator", "-password")
+    .lean();
+
+  const courseStudentsCount = await courseUserModel
+    .find({
+      course: course._id,
+    })
+    .count();
+
+  res.json({ course, sessions, comments, courseStudentsCount });
 };
 
 exports.createSession = async (req, res) => {
@@ -79,4 +103,44 @@ exports.removeSession = async (req, res) => {
   }
 
   return res.json(deletedCourses);
+};
+
+exports.register = async (req, res) => {
+  const isUserAlreadyRegistered = await courseUserModel
+    .findOne({
+      user: req.user._id,
+      course: req.params.id,
+    })
+    .lean();
+
+  if (isUserAlreadyRegistered) {
+    return res.status(409).json({
+      message: "User already registered in this course",
+    });
+  }
+
+  const register = await courseUserModel.create({
+    user: req.user._id,
+    course: req.params.id,
+    price: req.body.price,
+  });
+
+  return res
+    .status(201)
+    .json({ message: "You are registered successfully :))" });
+};
+
+exports.getCoursesByCategory = async (req, res) => {
+  const { href } = req.params;
+  const category = await categoryModel.findOne({ href });
+
+  if (category) {
+    const categoryCourses = await courseModel.find({
+      categoryID: category._id,
+    });
+
+    res.json(categoryCourses);
+  } else {
+    res.josn([]);
+  }
 };
