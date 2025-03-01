@@ -3,6 +3,7 @@ const sessionModel = require("./../../models/session");
 const categoryModel = require("./../../models/category");
 const commentsModel = require("./../../models/comment");
 const courseUserModel = require("./../../models/course-user");
+const { default: mongoose } = require("mongoose");
 
 exports.create = async (req, res) => {
   const {
@@ -54,7 +55,18 @@ exports.getOne = async (req, res) => {
     })
     .count();
 
-  res.json({ course, sessions, comments, courseStudentsCount });
+  const isUserRegisteredToThisCourse = !!(await courseUserModel.findOne({
+    user: req.user._id,
+    course: course._id,
+  }));
+
+  res.json({
+    course,
+    sessions,
+    comments,
+    courseStudentsCount,
+    isUserRegisteredToThisCourse,
+  });
 };
 
 exports.createSession = async (req, res) => {
@@ -143,4 +155,46 @@ exports.getCoursesByCategory = async (req, res) => {
   } else {
     res.josn([]);
   }
+};
+
+exports.remove = async (req, res) => {
+  const isObjectIDValid = mongoose.Types.ObjectId.isValid(req.params.id);
+
+  if (!isObjectIDValid) {
+    return res.status(409).json({
+      messgae: "Course ID is not valid !!",
+    });
+  }
+
+  const deletedCourse = await courseModel.findOneAndRemove({
+    _id: req.params.id,
+  });
+
+  if (!deletedCourse) {
+    return res.status(404).json({
+      messgae: "Course not found !!",
+    });
+  }
+
+  return res.json(deletedCourse);
+};
+
+exports.getRelated = async (req, res) => {
+  const { href } = req.params;
+
+  const course = await courseModel.findOne({ href });
+
+  if (!course) {
+    return res.status(404).json({
+      messgae: "Course not found !!",
+    });
+  }
+
+  let relatedCourses = await courseModel.find({
+    categoryID: course.categoryID,
+  });
+
+  relatedCourses = relatedCourses.filter((course) => course.href !== href);
+
+  return res.json(relatedCourses);
 };

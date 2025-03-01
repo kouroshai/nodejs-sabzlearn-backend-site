@@ -17,3 +17,17 @@ exports.create = async (req, res) => {
 
   return res.status(201).json(comment);
 };
+
+exports.remove = async (req, res) => {
+  const deletedComment = await commentModel.findOneAndRemove({
+    _id: req.params.id,
+  });
+
+  if (!deletedComment) {
+    return res.status(404).json({
+      message: "Comment not found !!",
+    });
+  }
+
+  return res.json(deletedComment);
+};
