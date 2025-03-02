@@ -31,3 +31,65 @@ exports.remove = async (req, res) => {
 
   return res.json(deletedComment);
 };
+
+exports.accept = async (req, res) => {
+  const acceptedComment = await commentModel.findOneAndUpdate(
+    {
+      _id: req.params.id,
+    },
+    { isAccept: 1 }
+  );
+
+  if (!acceptedComment) {
+    return res.status(404).json({
+      message: "Comment not found !!",
+    });
+  }
+
+  return res.json({ message: "Comment accepted successfully" });
+};
+
+exports.reject = async (req, res) => {
+  const rejectedComment = await commentModel.findOneAndUpdate(
+    {
+      _id: req.params.id,
+    },
+    { isAccept: 0 }
+  );
+
+  if (!rejectedComment) {
+    return res.status(404).json({
+      message: "Comment not found !!",
+    });
+  }
+
+  return res.json({ message: "Comment rejected successfully" });
+};
+
+exports.answer = async (req, res) => {
+  const { body } = req.body;
+
+  const acceptedComment = await commentModel.findOneAndUpdate(
+    { _id: req.params.id },
+    {
+      isAccept: 1,
+    }
+  );
+
+  if (!acceptedComment) {
+    return res.status(404).json({
+      message: "Comment not found !!",
+    });
+  }
+
+  const answerComment = await commentModel.create({
+    body,
+    course: acceptedComment.course,
+    creator: req.user._id,
+    isAnswer: 1,
+    isAccept: 1, // 1 => show as public
+    mainCommentID: req.params.id,
+  });
+
+  return res.status(201).json(answerComment);
+};

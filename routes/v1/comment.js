@@ -11,4 +11,16 @@ router
   .route("/:id")
   .delete(authMiddleware, isAdminMiddleware, commentsController.remove);
 
+router
+  .route("/:id/accept")
+  .put(authMiddleware, isAdminMiddleware, commentsController.accept);
+
+router
+  .route("/:id/reject")
+  .put(authMiddleware, isAdminMiddleware, commentsController.reject);
+
+router
+  .route("/:id/answer")
+  .post(authMiddleware, isAdminMiddleware, commentsController.answer);
+
 module.exports = router;

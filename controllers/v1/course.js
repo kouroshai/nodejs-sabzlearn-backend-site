@@ -47,6 +47,7 @@ exports.getOne = async (req, res) => {
   const comments = await commentsModel
     .find({ course: course._id, isAccept: 1 })
     .populate("creator", "-password")
+    .populate("course")
     .lean();
 
   const courseStudentsCount = await courseUserModel
@@ -60,10 +61,25 @@ exports.getOne = async (req, res) => {
     course: course._id,
   }));
 
+  let allComments = [];
+
+  comments.forEach((comment) => {
+    comments.forEach((answerComment) => {
+      if (String(comment._id) == String(answerComment.mainCommentID)) {
+        allComments.push({
+          ...comment,
+          course: comment.course.name,
+          creator: comment.creator.name,
+          answerComment,
+        });
+      }
+    });
+  });
+
   res.json({
     course,
     sessions,
-    comments,
+    comments: allComments,
     courseStudentsCount,
     isUserRegisteredToThisCourse,
   });
