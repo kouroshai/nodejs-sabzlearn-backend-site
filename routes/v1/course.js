@@ -26,6 +26,9 @@ router
 
 router.route("/related/:href").get(coursesController.getRelated);
 
+router.route("/popular").get(coursesController.popular);
+router.route("/presell").get(coursesController.presell);
+
 router.route("/category/:href").get(coursesController.getCoursesByCategory);
 
 router.route("/:id/register").post(authMiddleware, coursesController.register);

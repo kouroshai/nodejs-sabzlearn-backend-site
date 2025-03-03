@@ -93,3 +93,15 @@ exports.answer = async (req, res) => {
 
   return res.status(201).json(answerComment);
 };
+
+exports.getAll = async (req, res) => {
+  const comments = await commentModel
+    .find()
+    .populate("course")
+    .populate("creator", "-password")
+    .lean();
+
+  // Codes ...
+
+  return res.json(comments);
+};

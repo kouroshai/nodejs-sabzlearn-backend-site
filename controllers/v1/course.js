@@ -214,3 +214,11 @@ exports.getRelated = async (req, res) => {
 
   return res.json(relatedCourses);
 };
+
+exports.popular = async (req, res) => {
+  // Coding ...✌️
+};
+
+exports.presell = async (req, res) => {
+  // Coding ...✌️
+};
